@@ -7,7 +7,9 @@ import React, {
   useCallback,
   ReactNode,
 } from "react";
-import { AssetScale, AgeRange, Question, getQuestions } from "@/data/questions";
+import { AssetScale, AgeRange, Question, getQuestions, ASSET_BASE } from "@/data/questions";
+// ASSET_BASE 基準金額: low=1萬 | mid=50萬 | high=100萬 | ultra=1000萬
+// {{amount}} 佔位符替換在 getQuestions() 內部完成，startQuiz 呼叫時即注入
 
 export type { AgeRange };
 
@@ -65,7 +67,14 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   const startQuiz = useCallback(() => {
     setState((prev) => {
       if (!prev.assetScale || !prev.ageRange) return prev;
-      const questions = getQuestions(prev.assetScale, prev.ageRange);
+
+      // 確認 4 個資產規模皆有對應基準金額
+      // low=1萬 | mid=50萬 | high=100萬 | ultra=1000萬
+      const base = ASSET_BASE[prev.assetScale]; // { amount, label }
+      if (!base) return prev;
+
+      // getQuestions 在此將 {{amount}} 等佔位符替換為具體金額文字
+      const questions = getQuestions(prev.assetScale);
       return {
         ...prev,
         questions,
